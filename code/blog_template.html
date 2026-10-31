@@ -1,0 +1,142 @@
+<!-- wp:paragraph -->
+<p><em>How many islands are there in the world? I counted every one in a detailed, free map of the world's shorelines and found {{counts.n|int}}, from Greenland down to rocks smaller than a tennis court. Then I asked who owns them, and how many of us live on one. The answer to that last question is {{pop.isl|m0}} million people: one in ten.</em></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons -->
+<div class="wp-block-buttons"><!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://maps.tristanhotham.com/world-islands/">Explore the interactive version</a></div>
+<!-- /wp:button -->
+<!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://doi.org/10.5281/zenodo.23848301">Read the paper</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons -->
+
+<!-- wp:paragraph -->
+<p>Sweden says it has {{meta.swe_official|int}} islands. Norway and Finland have their own big numbers, and Indonesia has spent years recounting its archipelago. I have always been a little suspicious of these figures, not because anyone is fibbing, but because the number of islands is not really a fact about the world. It is a fact about the map. Look closer and the coast breaks up into more and more rocks, skerries and sandbanks, each of which is, technically, an island.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>So instead of hunting for the true number, I took one map and counted everything on it. GSHHG is a free world shoreline built by two geophysicists, Paul Wessel and Walter Smith, and used inside a great many mapping tools. At full resolution it draws {{counts.n|int}} islands: {{counts.sea|int}} in the sea, {{counts.lake|int}} in lakes and rivers and {{counts.ant|int}} around Antarctica. I gave each a size, a country and a population, using WorldPop's estimates for 2025, which spread the world's people over a grid of one-kilometre squares.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_map_world.png|World map in a gentle curved projection with pale continents and every island coloured by size, from gold for the smallest to deep indigo for the largest. Indigo fills Greenland, the Canadian Arctic, Britain, Madagascar, Japan and the islands of Indonesia; thin gold threads of tiny islands trace the coasts of Norway, Chile, Alaska and the Baltic|Every island in the GSHHG full-resolution shoreline, coloured by size. The smallest are drawn as a single pixel.}}
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Mostly rocks</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>More than half of the islands, {{counts.under01|int}} of them, are under 0.1 km², and between them they hold almost none of the island land. {{counts.ge1|int}} islands are a square kilometre or more, {{counts.ge1000|int}} are 1,000 km² or more, and only {{counts.ge100000|int}} are bigger than 100,000 km², from Greenland down to Iceland. Greenland alone is {{counts.greenland_pct_isl_area|pc}} of all the island land in the world.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_sizes.png|Three bar charts by island size class. The number of islands falls steeply from 93,998 under 0.1 square kilometres to 18 over 100,000. The share of island land rises the other way, with 70 per cent in the largest class, and the share of island people is similar, with 65 per cent on islands over 100,000 square kilometres|The same islands three ways: how many there are in each size class, how much of the land they hold, and how many of the people.}}
+
+<!-- wp:paragraph -->
+<p>And the small ones are exactly the ones a map cannot agree on. GSHHG comes in five resolutions. The crudest shows {{res.1.n|int}} islands; the full one {{res.5.n|int}}. Natural Earth's detailed world map, behind countless atlases and apps, has {{res.0.n|int}}. But count only islands of a square kilometre or more and the three finest versions agree to within a few hundred: {{res.3.ge1|int}}, {{res.4.ge1|int}}, {{res.5.ge1|int}}. That is the number I would trust.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_resolutions.png|Two bar charts comparing maps. Counting all islands, Natural Earth 10m has 9,628, GSHHG crude 762, low 6,242, intermediate 34,392, high 146,510 and full 181,588. Counting islands of one square kilometre or more, the three finest GSHHG versions all show about 23,000|The count of all islands depends on the map's resolution; the count of islands of 1 km² or more barely moves.}}
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Canada wins, whatever you count</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Canada has the most islands on every measure: {{top_countries.all.0.n|int}} in all, and {{top_countries.ge1.0.ge1|int}} of a square kilometre or more. Counting every rock, Greenland, Finland, the United States, Norway and Sweden come next, all places where the ice ground the coast into skerries. Counting only islands of 1 km² or more, it is the United States, Indonesia, Russia and Chile. In this shoreline Sweden has {{swe.n|int}} islands, a long way short of its official figure, which comes from a much more detailed national map. The gap is the whole story of island counting in one number.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_baltic.png|Close-up map of the sea between Stockholm and Turku, crowded with thousands of islands in gold, orange and red, from the Stockholm archipelago on the left through the Åland islands in the middle to the Archipelago Sea off Turku on the right|The archipelagos between Stockholm and Turku hold {{baltic_n|int}} islands in the full-resolution shoreline.}}
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">One person in ten</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Of the {{pop.world|m0}} million people in WorldPop's grid, {{pop.isl|m0}} million live on islands, {{pop.pct|f1}}%. That surprised me: I would have guessed lower. Three islands do most of the work. Java has {{pop.top.0.pop|m0}} million people, one in every {{java_one_in|int}} people on Earth and more than all of Europe's islands put together, Britain included. Honshu has {{pop.top.1.pop|m0}} million and Great Britain {{pop.top.2.pop|m0}} million. Then come Luzon, Sumatra, Madagascar, Mindanao, Borneo, Hispaniola, Sri Lanka and Taiwan.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_populous.png|Horizontal bar chart of the twenty most populous islands in 2025: Java 153 million, Honshu 100 million, Great Britain 67 million, Luzon 61 million, Sumatra 57 million, then Madagascar, Mindanao, Borneo, Hispaniola, Sri Lanka, Taiwan and others down to Hokkaido at 5 million|The most populous islands, with WorldPop's 2025 estimates.}}
+
+<!-- wp:quote -->
+<blockquote class="wp-block-quote"><!-- wp:paragraph -->
+<p>Java alone holds more people than all of Europe's islands, Great Britain included.</p>
+<!-- /wp:paragraph --></blockquote>
+<!-- /wp:quote -->
+
+<!-- wp:paragraph -->
+<p>Some countries are split between island and mainland in interesting ways. In Denmark, {{dnk.pct|pc}} of people live on islands, mostly on Zealand around Copenhagen and on Funen. In Hong Kong it is {{hkg.pct|pc}}, in Malaysia {{mys.pct|pc}}, in Greece {{grc.pct|pc}}, and in Canada {{can.pct|pc}}, mostly thanks to Montreal, which is an island too.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Crowded and empty</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Among islands of 100 km² or more, the most crowded is Xiamen Island in China, with {{dens.ge100.0.dens|int}} people per square kilometre, ahead of Singapore. Among the big ones, over 1,000 km², it is Long Island in New York, then Java. At the other end, {{empty_n_ge1000|int}} islands of 1,000 km² or more have nobody on them in the population grid. The largest is Devon Island in the Canadian Arctic, {{empty.0.area|int}} km² of polar desert where NASA tests Mars rovers. Spitsbergen also shows up as empty, which it is not: Longyearbyen has a few thousand people. That is the population model missing a small town, a useful reminder that these are estimates.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_crowded_empty.png|Two bar charts. Left: the most crowded islands of over 100 square kilometres, led by Xiamen Island at about 18,800 people per square kilometre, then Singapore at 10,700, Montreal, Staten Island, Batam, Penang, Long Island and Phuket. Right: the largest islands with no one in the population grid, led by Devon Island at 55,886 square kilometres, then Melville, Axel Heiberg, Spitsbergen and others in the Arctic|The most crowded islands of 100 km² or more, and the largest with no one counted.}}
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">An island in a lake on an island</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>My favourite part of GSHHG is that it knows what sits inside what. {{nest.lakes_on_isl|int}} of its lakes lie on islands, and {{nest.n|int}} islands sit in those lakes. The biggest island in a lake on an island is Glover Island, {{nest.top.0.area|int}} km² of forest in Grand Lake on Newfoundland. On Luzon there are two: Talim Island in Laguna de Bay, and Volcano Island in Taal Lake, which has its own crater lake with an islet in it, one level deeper than the shoreline goes. Samosir in Lake Toba, which usually gets the title, is joined to the shore by a thin neck of land, so here it does not count.</p>
+<!-- /wp:paragraph -->
+
+{{IMG|b_nested.png|Three map panels. Newfoundland in deep blue with a red box around Grand Lake; a close-up of Grand Lake with the long magenta Glover Island in it; and Taal Lake on Luzon with Volcano Island in red at its centre|Islands in lakes on islands: Glover Island in Newfoundland and Volcano Island on Luzon.}}
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">What the map decides</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>A shoreline is full of judgements. GSHHG joins Manhattan and Mumbai's Salsette Island to the mainland, so their millions count as continental. It draws Montreal and Laval as one island, splits a peninsula off Baffin Island, and leaves out Nettilling Lake, the biggest lake on Baffin, along with most of the islands in Finland's lakes. The population grid is a model, too, and a one-kilometre square cannot split a city across a narrow channel. None of this changes the big picture, but it does mean I would not argue over the last few thousand islands or the last few million people.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The interactive map lets you search any country and see how many islands it has and how many of its people live on them, zoom from the whole world down to single rocks, and click any island for its size, its rank and its population.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">How I did this</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>I read the full-resolution GSHHG shoreline and treated every piece of land other than the five continents as an island, along with islands in lakes and around Antarctica, and repeated the count for the four coarser resolutions and Natural Earth. Each island took its country from Natural Earth, and big shared islands such as Borneo were measured country by country. For people, I used WorldPop's 2025 estimate, as re-tiled on GitHub by the world-population-3d project, and gave every populated grid square to the island or continent under it, or to the nearest land for squares on the coast. The paper sets out the method and its limits, and the data and code are on GitHub.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons -->
+<div class="wp-block-buttons"><!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://maps.tristanhotham.com/world-islands/">Explore the interactive version</a></div>
+<!-- /wp:button -->
+<!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://doi.org/10.5281/zenodo.23848301">Read the paper</a></div>
+<!-- /wp:button -->
+<!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://github.com/Tristan-Hotham/world-islands">Data and code</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons -->
+
+<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">Notes and sources</h3>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>GSHHG 2.3, Global Self-consistent, Hierarchical, High-resolution Geography database (Wessel and Smith), all five resolutions, LGPL-3.0.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><a href="https://www.worldpop.org/">WorldPop</a> Global 2, constrained population estimate for 2025 at about 1 km, CC BY 4.0, via the <a href="https://github.com/nn0000asdf/world-population-3d">world-population-3d</a> tiles (MIT).</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li><a href="https://www.naturalearthdata.com/">Natural Earth</a> countries, physical labels, land, minor islands and populated places (public domain).</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Sweden's island count is from Statistics Sweden (2013). Base map tiles on the interactive page © Esri.</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->

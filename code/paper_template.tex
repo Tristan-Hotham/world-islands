@@ -1,0 +1,151 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\newfontfamily\headfont{Inter}[UprightFont=*-ExtraBold,BoldFont=*-ExtraBold,Extension=.otf,Path=/usr/share/fonts/opentype/inter/]
+\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage{graphicx,booktabs,float,caption,array,xcolor,longtable}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage[round]{natbib}
+\usepackage{setspace}
+\setstretch{1.05}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\titleformat{\section}{\headfont\Large}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\headfont\large}{\thesubsection}{0.8em}{}
+\captionsetup{font=small,labelfont=bf}
+\urlstyle{same}
+\hypersetup{pdftitle={Where the World's Islands Are},pdfauthor={Tristan Hotham}}
+
+\begin{document}
+\begin{center}
+{\Large\bfseries Where the World's Islands Are\par}
+\vspace{0.4em}
+{\large Counting, measuring and peopling every island in the GSHHG shoreline\par}
+\vspace{1.2em}
+{\large Tristan Hotham\par}
+\vspace{0.3em}
+{\small Independent researcher\\
+ORCID: 0000-0003-4931-9349\\
+DOI: \href{https://doi.org/10.5281/zenodo.23848301}{https://doi.org/10.5281/zenodo.23848301}\par}
+\vspace{0.8em}
+2026
+\end{center}
+
+\begin{quote}
+\small
+\begin{center}\textbf{Abstract}\end{center}
+How many islands are there, who has them, and how many people live on them? I count every island in the full-resolution GSHHG shoreline, give each a country from Natural Earth and a population from WorldPop's 2025 estimate at about 1 km, and test how far the count depends on the map. GSHHG draws {{counts.n|int}} islands: {{counts.sea|int}} at sea, {{counts.lake|int}} in lakes and rivers and {{counts.ant|int}} around Antarctica. {{counts.under01_pct|f1}}\% are smaller than 0.1 km$^2$; {{counts.ge1|int}} are 1 km$^2$ or more, {{counts.ge1000|int}} are 1,000 km$^2$ or more. Below 1 km$^2$ the total depends on resolution: the five GSHHG resolutions give {{res.1.n|int}} to {{res.5.n|int}} islands and Natural Earth 10m gives {{res.0.n|int}}, while counts of islands of 1 km$^2$ or more agree within {{res_spread|int}} across the three finest GSHHG versions. Canada has the most islands on every threshold ({{top_countries.ge1.0.ge1|int}} of 1 km$^2$ or more). Islands cover {{counts.isl_area_pct|f1}}\% of the world's land and hold {{pop.isl|m0}} million people, {{pop.pct|f1}}\% of the world's population; Java, Honshu and Great Britain alone hold {{pop.top3_pct_isl|pc}} of them. Among islands of 100 km$^2$ or more the most crowded is Xiamen Island ({{dens.ge100.0.dens|int}} people per km$^2$); {{empty_n_ge1000|int}} islands of 1,000 km$^2$ or more have no one in the population grid. The largest island in a lake on an island is Glover Island in Newfoundland ({{nest.top.0.area|int}} km$^2$). The results depend on decisions made by the shoreline (what is joined, what is split) and on a modelled population, which I set out.
+
+\textbf{Keywords:} islands; shorelines; GSHHG; WorldPop; population; coastline paradox; Natural Earth; geography
+\end{quote}
+
+\section{Introduction}
+Island counts are a staple of national pride and of quiz books. Sweden counts {{meta.swe_official|int}} islands in its national map, Norway and Finland quote figures in the tens of thousands, and Indonesia has repeatedly revised the number of its islands. These figures are not comparable, because the number of islands depends on the definition of an island and, more than anything, on the scale of the map: the coastline paradox applies to islands as much as to coastlines \citep{mandelbrot}. A finer map does not only draw the same islands more precisely; it draws new ones.
+
+This study takes a different route. Rather than seek the true number, it counts everything in one open, consistent, global shoreline, GSHHG \citep{gshhg}, and reports how the count changes with resolution. It then asks who holds the islands, how large they are, and how many people live on them, using WorldPop's gridded population for 2025 \citep{worldpop}. An interactive map accompanies the paper (\url{{{meta.page}}}).
+
+\section{Data}
+\textbf{Shorelines.} GSHHG 2.3 \citep{gshhg}, in the five resolutions packaged for the basemap Python library (crude, low, intermediate, high and full). Its polygons are hierarchical: level 1 is land bounded by the sea, level 2 a lake, level 3 an island in a lake; Antarctica and the islands in its ice front are kept apart at level 5 in this package. Each polygon carries GSHHG's own area. Polygons cut at the date line are stored in two pieces with a shared identifier.
+
+\textbf{Population.} WorldPop Global 2, release 2024B, constrained estimate for 2025 at 30 arc seconds \citep{worldpop}. The constrained model distributes census-based totals only into grid cells with detected buildings. I used a public re-tiling of this raster on GitHub (world-population-3d, MIT licence), which keeps every cell with 3 or more people in {{meta.n_tiles|int}} tiles of 5 degrees, with log-quantised counts (relative error under 0.05\%). It holds {{meta.n_cells|int}} cells and {{pop.world|m1}} million people. Dropping cells under 3 people loses a negligible share of the total.
+
+\textbf{Countries and names.} Natural Earth 10m admin-0 countries, physical labels (island polygons and points), land and minor islands, and populated places \citep{naturalearth}.
+
+{{TABLE_SOURCES}}
+
+\section{Methods}
+\subsection{What counts as an island}
+Every level-1 polygon other than the five continents (Eurasia, Africa, North America, South America and Australia, each over 5 million km$^2$) is a sea island. Every level-3 polygon is an island in a lake or river; {{counts.river|int}} of these lie in lakes that GSHHG flags as river lakes. Antarctic level-5 polygons other than the continent are counted as Antarctic islands. Date-line pieces are joined. Area is GSHHG's area within the coastline, including any lakes. GSHHG judges what is joined and what is separate, and I keep its judgement: Manhattan and Mumbai's Salsette Island are joined to the mainland, Samosir is joined to the shore of Lake Toba, the Island of Montreal and Laval form one island, and the Brodeur Peninsula is cut off from Baffin Island.
+
+\subsection{Countries, regions and names}
+Each island takes the Natural Earth country under its representative point, or the nearest one when the point lies outside the Natural Earth coast (most small islands). For the {{counts.ge1000|int}} islands of 1,000 km$^2$ or more I measured the geodesic area of each country's share and assigned the island to the largest. Regions follow Natural Earth's continent and subregion fields, with geographic exceptions (Hawaii, Easter Island and New Guinea to Oceania; the French and Dutch Caribbean to the Caribbean; R\'eunion and Mayotte to Africa; Asian Russia to Asia; the French Southern Lands, Heard Island and South Georgia to Antarctica and the far south). Names come from Natural Earth's physical labels; the larger islands it leaves unnamed were named by hand from position, size and largest town, and doubtful ones were left unnamed.
+
+\subsection{Population}
+For each tile, land polygons were burned into a grid aligned with the population cells, continents and sea islands first, lakes removed, then islands in lakes, so that each cell takes the polygon under its centre. Cells whose centre lies in the sea or a lake (coastal cells) were given to a polygon touching the cell, which keeps thin islands and atolls, or else to the nearest land cell within two cells. {{pop.touch|m1}} million people were placed by touch and {{pop.near|m1}} million by distance; {{pop.unplaced|m1}} million could not be placed. Each cell was also given a Natural Earth country, for national totals.
+
+\section{Results}
+\subsection{How many islands}
+GSHHG at full resolution has {{counts.n|int}} islands (Figure~\ref{fig:map}). The distribution is extremely skewed (Figure~\ref{fig:sizes}): {{counts.under01|int}} islands ({{counts.under01_pct|f1}}\%) are under 0.1 km$^2$, {{counts.ge1|int}} are 1 km$^2$ or more, {{counts.ge10|int}} are 10 km$^2$ or more, {{counts.ge100|int}} are 100 km$^2$ or more, {{counts.ge1000|int}} are 1,000 km$^2$ or more and {{counts.ge100000|int}} exceed 100,000 km$^2$. The smallest island in the data is {{counts.min_m2|int}} m$^2$. Islands under 1 km$^2$ make up {{classes_sub1_pct|f1}}\% of the count but {{counts.under1_area_pct|f1}}\% of island land. The ten largest islands hold {{counts.top10_area_pct|f1}}\% of island land and Greenland alone {{counts.greenland_pct_isl_area|f1}}\%. In all, islands cover {{counts.isl_area|m1}} million km$^2$, {{counts.isl_area_pct|f1}}\% of land.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_map_world.png}
+\caption{Every island in the GSHHG full-resolution shoreline, coloured by size class, in the Equal Earth projection. Tiny islands are drawn as one pixel.}\label{fig:map}\end{figure}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_sizes.png}
+\caption{Islands by size class: number, share of island land and share of the people living on islands.}\label{fig:sizes}\end{figure}
+
+\subsection{The count depends on the map}
+Table~\ref{tab:res} and Figure~\ref{fig:res} compare the five GSHHG resolutions and Natural Earth 10m. The total rises from {{res.1.n|int}} islands at crude resolution to {{res.5.n|int}} at full, a factor of {{res_ratio_fc|int}}, and full resolution has {{res_ratio_fne|f1}} times as many islands as Natural Earth 10m. Each coarser version drops islands below its own resolution (the smallest island at crude resolution is {{res.1.min_km2|int}} km$^2$). Counts of islands of 1 km$^2$ or more, by contrast, are stable among the three finest GSHHG resolutions ({{res.3.ge1|int}}, {{res.4.ge1|int}}, {{res.5.ge1|int}}); Natural Earth has {{res.0.ge1|int}}. For any comparison of countries or regions, I therefore prefer counts at 1 km$^2$ or more. Within a single view of the map the effect is plain: the archipelagos between Stockholm and Turku alone hold {{baltic_n|int}} GSHHG islands, of which {{baltic_ge1|int}} are 1 km$^2$ or more (Figure~\ref{fig:baltic}).
+
+{{TABLE_RES}}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_resolutions.png}
+\caption{Islands drawn by Natural Earth 10m and by each GSHHG resolution: all sizes and 1 km$^2$ or more.}\label{fig:res}\end{figure}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_baltic.png}
+\caption{The Stockholm archipelago, the {\AA}land islands and the Archipelago Sea in the full-resolution shoreline; mainland in grey.}\label{fig:baltic}\end{figure}
+
+\subsection{Who has the islands}
+Canada has the most islands at every threshold: {{top_countries.all.0.n|int}} in all, {{top_countries.ge1.0.ge1|int}} of 1 km$^2$ or more and {{top_countries.ge10.0.ge10|int}} of 10 km$^2$ or more (Table~\ref{tab:cty}, Figure~\ref{fig:cty}). Counting all sizes, Greenland ({{top_countries.all.1.n|int}}), Finland ({{top_countries.all.2.n|int}}), the United States, Norway and Sweden follow, which reflects the many skerries of glaciated coasts. At 1 km$^2$ or more the order changes to the United States ({{top_countries.ge1.1.ge1|int}}), Indonesia ({{top_countries.ge1.2.ge1|int}}), Russia ({{top_countries.ge1.3.ge1|int}}) and Chile ({{top_countries.ge1.4.ge1|int}}). Sweden has {{swe.n|int}} GSHHG islands, {{swe.ge1|int}} of 1 km$^2$ or more, far from its national figure. Finland's GSHHG islands are almost all at sea (only {{fin_lake_pct|f1}}\% in lakes), which shows how incomplete the shoreline is for the islands of Finland's lakes. With territories folded into their sovereign states, Denmark (with Greenland and the Faroes) has {{top_sov.1.n|int}} islands.
+
+{{TABLE_CTY}}
+
+\begin{figure}[tbp]\centering\includegraphics[width=0.92\textwidth]{f_countries.png}
+\caption{Islands of 1 km$^2$ or more by country or territory (top 15), with the count of all sizes.}\label{fig:cty}\end{figure}
+
+\subsection{The largest islands}
+Greenland ({{largest.0.area|int}} km$^2$), New Guinea ({{largest.1.area|int}} km$^2$), Borneo ({{largest.2.area|int}} km$^2$), Madagascar, Baffin and Sumatra are the largest (Figure~\ref{fig:big}). Australia, at {{aus_greenland|f1}} times Greenland's area, is treated as a continent. Eight islands of over 1,000 km$^2$ are shared between countries in Natural Earth, among them New Guinea (Papua New Guinea {{shared.0.shares.0.1|f1}}\%, Indonesia {{shared.0.shares.1.1|f1}}\%), Borneo and Ireland. The largest islands in lakes are Manitoulin Island in Lake Huron ({{largest_lake.0.area|int}} km$^2$) and Ren\'e-Levasseur Island in the Manicouagan Reservoir ({{largest_lake.1.area|int}} km$^2$); the largest Antarctic island in this version of GSHHG is Adelaide Island ({{largest_ant.0.area|int}} km$^2$), since islands bound into ice shelves, such as Alexander Island, are part of the Antarctic polygon.
+
+\begin{figure}[tbp]\centering\includegraphics[width=0.92\textwidth]{f_largest.png}
+\caption{The twenty largest islands, with their population in 2025.}\label{fig:big}\end{figure}
+
+\subsection{People on islands}
+Of the {{pop.world|m1}} million people in the WorldPop grid, {{pop.isl|m1}} million ({{pop.pct|f1}}\%) live on islands. They are concentrated on a few large islands (Figure~\ref{fig:pop}, Table~\ref{tab:pop}): Java has {{pop.top.0.pop|m1}} million, {{pop.java_pct_world|f1}}\% of the world's population; Honshu {{pop.top.1.pop|m1}} million and Great Britain {{pop.top.2.pop|m1}} million. These three hold {{pop.top3_pct_isl|f1}}\% of island people, and the top ten {{pop.top10_pct_isl|f1}}\%. Islands of 10,000 km$^2$ or more hold {{classes_ge10k_pop|f1}}\% of island people. {{pop.n_inhabited|int}} islands have anyone in the grid, {{pop.n_100k|int}} have 100,000 people or more and {{pop.n_1m|int}} have a million or more. Islands in lakes and rivers hold {{pop.lake_pop|m1}} million people, over half of them in Montreal and on the Mekong river island south of Phnom Penh.
+
+By region, Asia's islands hold {{regions.1.pop|m0}} million people ({{regions.1.pct_pop|f1}}\% of all island people), Europe's {{regions.0.pop|m0}} million and Africa's {{regions.2.pop|m0}} million. {{island_nations.n99_100k|int}} countries and territories of 100,000 people or more have 99\% or more of their people on islands, together {{island_nations.people99|m0}} million people. Among countries of over a million people with both island and mainland populations, the island share is highest in Denmark ({{dnk.pct|f1}}\%), Equatorial Guinea ({{island_nations.mixed.1.pct|f1}}\%), Hong Kong ({{hkg.pct|f1}}\%) and Malaysia ({{mys.pct|f1}}\%).
+
+\begin{figure}[tbp]\centering\includegraphics[width=0.92\textwidth]{f_populous.png}
+\caption{The twenty most populous islands, WorldPop 2025, coloured by size class.}\label{fig:pop}\end{figure}
+
+{{TABLE_POP}}
+
+\subsection{Crowded and empty islands}
+Among islands of 100 km$^2$ or more, the most crowded is Xiamen Island ({{dens.ge100.0.dens|int}} people per km$^2$), then Singapore ({{dens.ge100.1.dens|int}}), Montreal with Laval ({{dens.ge100.2.dens|int}}) and Staten Island ({{dens.ge100.3.dens|int}}) (Figure~\ref{fig:ce}). Among islands of 1,000 km$^2$ or more, Long Island is the most crowded ({{dens.ge1000.0.dens|int}}), ahead of Java ({{dens.ge1000.1.dens|int}}). Rankings of smaller islands are dominated by city districts on islets that the shoreline separates from their surroundings, where cells of 1 km cannot be trusted, so I do not report them. {{empty_n_ge1000|int}} islands of 1,000 km$^2$ or more have nobody in the grid, {{empty_polar_n|int}} of them in the Arctic or the far south; the largest is Devon Island ({{empty.0.area|int}} km$^2$). Uninhabited islands of every size make up {{empty_area_pct|f1}}\% of island land. Spitsbergen also appears empty, although Longyearbyen has a population of a few thousand: the constrained model places no one where its building layer finds no settlement.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_crowded_empty.png}
+\caption{Left: people per km$^2$ on islands of 100 km$^2$ or more. Right: the largest islands with no one in WorldPop's 2025 grid.}\label{fig:ce}\end{figure}
+
+\subsection{Islands in lakes on islands}
+{{nest.lakes_on_isl|int}} of GSHHG's {{counts.lakes|int}} lakes lie on islands; the largest, at {{nest.biggest_lake.km2|int}} km$^2$, is Amadjuak Lake on Baffin Island (Nettilling Lake, larger, is missing from the shoreline). {{nest.n|int}} islands lie in lakes on islands (Figure~\ref{fig:nest}). The largest is Glover Island in Grand Lake, Newfoundland ({{nest.top.0.area|int}} km$^2$ in a lake of {{nest.top.0.lake_km2|int}} km$^2$), followed by Talim Island in Laguna de Bay ({{nest.top.1.area|f1}} km$^2$) and Volcano Island in Taal Lake ({{nest.top.2.area|f1}} km$^2$), both on Luzon, and Isla Cabritos in Lake Enriquillo on Hispaniola ({{nest.top.3.area|f1}} km$^2$). Samosir, often cited as the largest island in an island, is joined to the shore of Lake Toba in GSHHG. Deeper nesting, such as Vulcan Point in the crater lake of Volcano Island, is below the shoreline's hierarchy.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_nested.png}
+\caption{Islands in lakes on islands: Glover Island in Grand Lake, Newfoundland, and Volcano Island in Taal Lake, Luzon.}\label{fig:nest}\end{figure}
+
+\section{Discussion}
+The headline count of islands is a property of the map. A count that includes everything the full-resolution GSHHG draws is dominated by rocks and skerries under a tenth of a square kilometre, most of them on glaciated coasts, and more detailed national maps find many more. Counts of islands of a square kilometre or more are robust to resolution and are the sensible basis for comparison, on which Canada leads by a wide margin and the United States, Indonesia, Russia and Chile follow.
+
+The human geography of islands is very different from their physical geography. A large part of island land is Arctic, and {{empty_area_pct|f1}}\% of it has no one in the grid, while island people are concentrated on a few large, fertile or urban islands in Asia and Europe. About one person in ten lives on an island. The figure depends on what the shoreline separates: if Manhattan and Salsette were islands in GSHHG, as they are in reality, it would rise; if Great Britain, Java and Honshu were treated as continents, as some definitions of an island might suggest for very large islands, it would fall sharply.
+
+\section{Limitations}
+First, resolution: GSHHG misses many small islands (especially in lakes and rivers, and in Finland's lakes in particular) and counts below 1 km$^2$ are not comparable with national counts. Second, shoreline judgements and age: GSHHG is built from older World Vector Shoreline and CIA World Data Bank data; it lacks recent reclamation, misses Nettilling Lake, joins some islands to neighbours or to the mainland and splits off the Brodeur Peninsula. Third, population: WorldPop is a model, its constrained version can miss small settlements and, at about 1 km, cannot divide people precisely across narrow channels. Fourth, attribution: countries follow Natural Earth's de facto borders, and big shared islands are assigned to the country with the largest share for counting, though national population totals use every cell. Fifth, names: island names are incomplete and some were added by hand.
+
+\section{Conclusion}
+The full-resolution GSHHG shoreline draws {{counts.n|int}} islands, of which {{counts.ge1|int}} are a square kilometre or more. They cover {{counts.isl_area_pct|f1}}\% of the world's land and carry {{pop.pct|f1}}\% of its people. The data, code and an interactive map make it possible to look up any island and to repeat the count with other thresholds or shorelines.
+
+\section*{Data and code availability}
+The interactive map is at \url{{{meta.page}}}. Data and code are at \url{{{meta.repo}}} and archived with this paper at \url{https://doi.org/10.5281/zenodo.23848301}. Island outlines, tiles and points derived from GSHHG are LGPL-3.0; population figures derive from WorldPop (CC BY 4.0); Natural Earth is public domain; the derived tables and text are released under CC BY 4.0 and the code under the MIT licence.
+
+\section*{AI statement}
+I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.
+
+\begin{thebibliography}{9}
+\bibitem[Mandelbrot(1967)]{mandelbrot} Mandelbrot, B. (1967) How long is the coast of Britain? Statistical self-similarity and fractional dimension. \emph{Science}, 156(3775), 636 to 638.
+\bibitem[Natural Earth(2026)]{naturalearth} Natural Earth (2026) Admin 0 countries, physical labels, land, minor islands and populated places (1:10m). Public domain. \url{https://www.naturalearthdata.com/}
+\bibitem[Wessel and Smith(1996)]{gshhg} Wessel, P. and Smith, W. H. F. (1996) A global, self-consistent, hierarchical, high-resolution shoreline database. \emph{Journal of Geophysical Research}, 101(B4), 8741 to 8743.
+\bibitem[WorldPop(2024)]{worldpop} WorldPop (2024) Global 2 population estimates, release 2024B, constrained, 2015 to 2030, 30 arc seconds. School of Geography and Environmental Science, University of Southampton. CC BY 4.0. \url{https://www.worldpop.org/}
+\end{thebibliography}
+\end{document}

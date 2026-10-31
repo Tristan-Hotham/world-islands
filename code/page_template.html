@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Where the World's Islands Are</title>
+<meta name="description" content="Every island in the full-resolution GSHHG shoreline, {{counts.n|int}} of them, mapped by size, with who owns them and how many people live on them: {{pop.pct|f1}}% of humanity, from WorldPop 2025.">
+<meta property="og:title" content="Where the world's islands are: count, size and how many people live on them">
+<meta property="og:description" content="{{counts.n|int}} islands in the full-resolution world shoreline, {{counts.ge1|int}} of them 1 km² or more. {{pop.isl|m0}} million people, {{pop.pct|f1}}% of humanity, live on one.">
+<meta property="og:image" content="https://maps.tristanhotham.com/world-islands/header.png">
+<meta property="og:url" content="https://maps.tristanhotham.com/world-islands/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Paper and sea: warm shell paper, slate ink, island gold to deep indigo for size. */
+:root{
+  --bg:#F6F3EC; --panel:#ECE7DC; --fg:#1D2A31; --muted:#5E6A70; --rule:#DCD5C6; --card:#FFFDF8; --border:#CCC4B3;
+  --hot:#C9455A; --cool:#34409A; --gold:#E09A2E; --land:#E2DDD2; --sea:#EAF0F0;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15171B; --panel:#1F2228; --fg:#ECE8E1; --muted:#A3A7AE; --rule:#33373E; --card:#1B1E23; --border:#454A52;
+  --hot:#E07A8A; --cool:#8F9BF0; --gold:#F0B55A; --land:#262A31; --sea:#191C21; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15171B; --panel:#1F2228; --fg:#ECE8E1; --muted:#A3A7AE; --rule:#33373E; --card:#1B1E23; --border:#454A52;
+  --hot:#E07A8A; --cool:#8F9BF0; --gold:#F0B55A; --land:#262A31; --sea:#191C21; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 18px/1.62 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow-x:hidden}
+.wrap{max-width:700px;margin:0 auto;padding-block:28px 64px}
+.wrap .bleed{width:min(1180px,calc(100vw - 32px));margin-left:calc((100% - min(1180px,100vw - 32px))/2);margin-right:0}
+a{color:inherit;text-decoration-color:var(--hot);text-underline-offset:3px}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kicker b{background:var(--cool);color:#fff;padding:5px 8px;font-weight:500}
+header.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;align-items:end;border-bottom:6px double var(--fg);padding-bottom:22px;margin-top:18px}
+h1{font:900 clamp(44px,10.5vw,96px)/.92 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 .a{color:var(--cool)}
+.mark{width:clamp(70px,15vw,118px);height:auto;display:block}
+.dek{grid-column:1/-1;font-size:21px;line-height:1.42;margin:8px 0 0;max-width:54ch}
+.byline{font:400 13px/1.4 var(--mono);color:var(--muted);margin-top:14px}
+h2{font:800 34px/1.04 var(--display);letter-spacing:-.01em;margin:54px 0 10px;text-wrap:balance}
+h2 .n{font:500 13px/1 var(--mono);color:var(--hot);display:block;letter-spacing:.1em;margin-bottom:10px}
+h3{font:600 20px/1.25 var(--display);margin:28px 0 6px}
+p{margin:0 0 16px}
+.lede::first-letter{font:900 72px/.8 var(--display);float:left;margin:6px 10px 0 0;color:var(--cool)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:26px 0 8px}
+.stats div{background:var(--card);padding:14px 12px}
+.stats b{display:block;font:900 clamp(22px,4.4vw,32px)/1 var(--display);letter-spacing:-.01em}
+.stats b.h{color:var(--hot)} .stats b.c{color:var(--cool)} .stats b.g{color:var(--gold)}
+.stats span{font:400 12px/1.35 var(--mono);color:var(--muted);display:block;margin-top:6px}
+@media (max-width:600px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.figure{margin:26px 0 30px}
+.fig-h{font:600 19px/1.25 var(--display);margin:0 0 4px}
+.fig-sub{font:400 13px/1.45 var(--mono);color:var(--muted);margin:0 0 12px}
+.src{font:400 12px/1.45 var(--mono);color:var(--muted);margin-top:10px}
+.chart{width:100%;position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--mono);fill:var(--fg)}
+.lab{font-size:12px}.lab.m{fill:var(--muted)}.lab.b{font-weight:500}.lab.s{font-size:11px}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font:400 12px/1.45 var(--mono);padding:8px 10px;border-radius:3px;max-width:300px;z-index:100500;transform:translate(-50%,calc(-100% - 12px));display:none}
+.tip b{font-weight:500}
+.controls{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.scrollrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:2px;max-width:100%}
+.scrollrow .btn{flex:0 0 auto;white-space:nowrap}
+.ctl-l{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:2px;flex:0 0 auto;align-self:center}
+.btn{font:500 12px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:8px 10px;cursor:pointer;min-height:36px}
+.btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn:focus-visible,input:focus-visible,summary:focus-visible,select:focus-visible{outline:2px solid var(--hot);outline-offset:2px}
+.searchbox{position:relative;flex:1 1 260px;min-width:0}
+input[type=search]{font:400 15px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:10px 11px;min-height:40px;width:100%}
+.suggest{position:absolute;left:0;right:0;top:100%;margin:2px 0 0;padding:0;list-style:none;background:var(--card);border:1px solid var(--border);z-index:1001;font:400 13px/1.3 var(--mono);display:none;max-height:340px;overflow:auto}
+.suggest li{padding:8px 10px;cursor:pointer;border-bottom:1px solid var(--rule)}
+.suggest li span{color:var(--muted)}
+.suggest li[aria-selected="true"],.suggest li:hover{background:var(--panel)}
+.mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+@media (max-width:900px){.mapgrid{grid-template-columns:1fr}}
+.side{background:var(--card);border:1px solid var(--border);padding:12px 12px 10px;font:400 13px/1.45 var(--mono);max-height:680px;overflow:auto}
+@media (max-width:900px){.side{max-height:none}}
+.side h4{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+.side h4:first-child{margin-top:2px}
+.side .big{font:800 24px/1.12 var(--display);margin:2px 0 6px;display:block}
+.side .sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.side table,.leaflet-popup-content table{width:100%;border-collapse:collapse;margin:4px 0 6px}
+.side td,.leaflet-popup-content td{padding:3px 8px 3px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.side td:first-child,.leaflet-popup-content td:first-child{color:var(--muted)}
+.side td.num{text-align:right;white-space:nowrap}
+.fbar{display:grid;grid-template-columns:minmax(0,1fr) 64px;gap:2px 8px;align-items:center;margin:0 0 3px}
+.fbar .l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fbar .t{grid-column:1/-1;height:6px;background:var(--rule);border-radius:2px;overflow:hidden}
+.fbar .t i{display:block;height:100%}
+.fbar .v{text-align:right;color:var(--muted)}
+.chip{display:inline-block;font:500 11px/1 var(--mono);padding:4px 7px;border-radius:999px;color:#fff;margin:0 4px 4px 0}
+.back{font:400 12px var(--mono);background:none;border:0;color:var(--muted);padding:0;cursor:pointer;text-decoration:underline;margin-bottom:6px}
+.sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.lmap{height:640px;border:1px solid var(--border);background:var(--sea);border-radius:2px}
+@media (max-width:600px){.lmap{height:min(66vh,480px)}}
+.leaflet-container{font:400 12px/1.4 var(--mono);background:var(--sea)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--card);color:var(--fg)}
+.leaflet-popup-content{font:400 12.5px/1.45 var(--mono);margin:12px 14px}
+.leaflet-popup-content b.nm{display:block;font:700 16px/1.2 var(--display);margin-bottom:4px}
+.leaflet-container a.leaflet-popup-close-button{color:var(--muted)}
+.lyrBtn{background:var(--card,var(--bg));color:var(--fg);border:1px solid var(--border);border-radius:3px;font:600 12px/1 var(--mono);padding:8px 10px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.lyrBtn[aria-expanded="true"]{background:var(--fg);color:var(--bg)}
+.lyrPanel{background:var(--card,var(--bg));color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:10px 12px 8px;margin-top:6px;width:250px;box-shadow:0 2px 10px rgba(0,0,0,.15);font:400 12px/1.3 var(--mono);max-height:min(70vh,520px);overflow:auto}
+.lyrPanel[hidden]{display:none}
+.lyrPanel .row{margin:0 0 9px}
+.lyrPanel label{display:flex;gap:6px;align-items:center;cursor:pointer;font-weight:600}
+.lyrPanel input[type=range]{width:100%;accent-color:var(--fg)}
+.lyrPanel select{font:400 12px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--border);border-radius:2px;padding:2px 4px;width:100%;min-height:0}
+.lyrPanel .sub{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:11px;margin-top:3px}
+.lyrPanel .sub span{flex:0 0 58px}
+.lyrPanel .hd{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 0 7px;border-top:1px solid var(--rule);padding-top:9px}
+.lyrPanel .reset{font:400 11px var(--mono);color:var(--muted);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+.cityL{font:500 11px/1 var(--mono);color:var(--fg);white-space:nowrap;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 2px var(--bg);pointer-events:none}
+.cityL i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--fg);margin-right:4px;vertical-align:1px}
+.cityL.s{font-size:10px;font-weight:400}
+.leaflet-bar a,.leaflet-bar a:hover{background:var(--card);color:var(--fg);border-bottom-color:var(--border)}
+.leaflet-control-attribution{background:color-mix(in srgb,var(--card) 85%,transparent)!important;color:var(--muted)}
+.leaflet-control-attribution a{color:var(--fg)}
+.legend{display:flex;gap:6px 12px;flex-wrap:wrap;font:400 12px/1.3 var(--mono);margin-top:10px;align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:2px;display:inline-block;flex:0 0 auto}
+.pull{font:600 26px/1.25 var(--display);border-left:6px solid var(--cool);padding:4px 0 4px 18px;margin:30px 0}
+.note{background:var(--panel);border:1px solid var(--rule);padding:14px 16px;font-size:16px;margin:22px 0}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:20px 0}
+@media (max-width:760px){.cards{grid-template-columns:1fr 1fr}}
+@media (max-width:440px){.cards{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--border);border-top:7px solid var(--c,var(--hot));padding:10px 12px;font:400 12px/1.45 var(--mono);cursor:pointer;text-align:left;color:var(--fg)}
+.card:hover{background:var(--panel)}
+.card .fam{color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-size:10.5px}
+.card b{font:700 17px/1.2 var(--display);display:block;margin:4px 0 2px}
+.card span{color:var(--muted)}
+details{margin:14px 0}
+summary{font:500 13px/1.4 var(--mono);cursor:pointer;color:var(--fg);padding:8px 0}
+.ftable{width:100%;border-collapse:collapse;font:400 12.5px/1.4 var(--mono)}
+.ftable td,.ftable th{padding:6px 6px 6px 0;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+.ftable th{font-weight:500;color:var(--muted)}
+.ftable td.num,.ftable th.num{text-align:right;white-space:nowrap}
+.tscroll{overflow-x:auto}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.cta a{font:500 13px/1 var(--mono);text-decoration:none;border:1px solid var(--fg);padding:11px 14px;border-radius:3px}
+.cta a.p{background:var(--cool);border-color:var(--cool);color:#fff}
+footer{border-top:6px double var(--fg);margin-top:56px;padding-top:16px;font:400 13px/1.55 var(--mono);color:var(--muted)}
+footer p{margin:0 0 10px}
+.theme{position:fixed;right:12px;bottom:12px;z-index:1002}
+@media print{.theme,.controls{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kicker"><b>Data study</b><span>Geography and people</span><span>World, 2026</span></div>
+<header class="hero">
+  <h1>Where the world's <span class="a">islands</span> are</h1>
+  <svg class="mark" viewBox="0 0 100 120" aria-hidden="true"><g id="heroMark"></g></svg>
+  <p class="dek">Count every island in a detailed open map of the world's shorelines and you get {{counts.n|int}}. Over half are rocks and islets under a tenth of a square kilometre; {{counts.ge1|int}} are a square kilometre or more. Who has them, how big are they, and how many of us live on one?</p>
+</header>
+<div class="byline">Dr Tristan Hotham · Independent researcher · 2026 · Data: GSHHG shorelines; WorldPop 2025; Natural Earth</div>
+
+<div class="stats">
+  <div><b class="c">{{counts.n|int}}</b><span>islands in the GSHHG full-resolution shoreline, at sea and in lakes</span></div>
+  <div><b class="g">{{counts.ge1|int}}</b><span>are 1 km² or more; {{counts.ge1000|int}} are 1,000 km² or more</span></div>
+  <div><b class="h">{{pop.pct|f1}}%</b><span>of the world's people live on an island: {{pop.isl|m0}} million</span></div>
+  <div><b>{{top_countries.ge1.0.ge1|int}}</b><span>islands of 1 km² or more belong to Canada, the most of any country</span></div>
+</div>
+
+<p class="lede">How many islands are there in the world? It sounds like a question with an answer, and it is not. Sweden claims more than a quarter of a million, Norway and Finland boast of theirs, and Indonesia has spent years recounting its own. The number depends on what you count as an island and, above all, on how closely you look: every map smooths the coast at some scale, and each step closer adds rocks, skerries and sandbanks that the step before could not see.</p>
+<p>So I picked one map and counted everything on it. GSHHG, the Global Self-consistent, Hierarchical, High-resolution Geography database, is a free shoreline of the whole world, drawn in one consistent way and detailed down to rocks of a few hundred square metres. It draws {{counts.n|int}} islands: {{counts.sea|int}} in the sea, {{counts.lake|int}} in lakes and rivers and {{counts.ant|int}} around Antarctica. I gave each one a size, a country and a population from WorldPop's 2025 estimates, which put people on a one-kilometre grid. Zoom in anywhere, search a country, and click any island.</p>
+
+<h2><span class="n">01 · The map</span>Every island, coloured by size</h2>
+<div class="bleed" id="atlas">
+<div class="controls">
+  <div class="searchbox"><input type="search" id="q" placeholder="Search a country, an island or a place" aria-label="Search a country, an island or a place" autocomplete="off"><ul class="suggest" id="sug" role="listbox"></ul></div>
+</div>
+<div class="controls">
+  <div class="scrollrow" id="focusRow"><span class="ctl-l">Zoom to</span></div>
+</div>
+<div class="mapgrid">
+  <div><div id="map" class="lmap" role="application" aria-label="World map of islands coloured by size"></div>
+    <div class="legend" id="legend" aria-label="Island size"></div></div>
+  <div class="side" id="side" aria-live="polite"></div>
+</div>
+<p class="src">Islands from the GSHHG full-resolution shoreline (level 1 land other than the five continents, level 3 islands in lakes, and Antarctic islands), drawn as a raster at world scale and as outlines and dots close up. Click an island for its area, its rank and the people WorldPop places on it. Country from Natural Earth. Sources: GSHHG 2.3 (Wessel and Smith, LGPL-3.0); WorldPop Global 2, 2025 (CC BY 4.0); Natural Earth (public domain). Base map tiles © Esri.</p>
+</div>
+
+<h2><span class="n">02 · How many</span>Over half of them are rocks</h2>
+<p>Islands are overwhelmingly small. {{counts.under01|int}} of the {{counts.n|int}} ({{counts.under01_pct|pc}}) are under 0.1 km², smaller than fourteen football pitches, and together they hold less than a tenth of one per cent of the island land. {{counts.ge1|int}} islands are 1 km² or more, {{counts.ge10|int}} are 10 km² or more, {{counts.ge1000|int}} are 1,000 km² or more, and just {{counts.ge100000|int}} are bigger than 100,000 km², from Greenland down to Iceland. The biggest ten hold {{counts.top10_area_pct|pc}} of all island land, and Greenland alone {{counts.greenland_pct_isl_area|pc}}.</p>
+<div class="figure"><p class="fig-h">Islands by size</p><p class="fig-sub">Number of islands in each size class, and the share of island land and island people in each. Hover for figures.</p>
+<div class="scrollrow" id="sizeRow" style="margin-bottom:10px"><button class="btn" data-k="n" aria-pressed="true">Islands</button><button class="btn" data-k="pct_area" aria-pressed="false">Share of land</button><button class="btn" data-k="pct_pop" aria-pressed="false">Share of people</button></div>
+<div class="chart" id="sizeChart"></div></div>
+<p>The count of small islands is a property of the map more than of the world. GSHHG comes in five resolutions, each simplified from the full one. The crudest draws {{res.1.n|int}} islands, the low {{res.2.n|int}}, the intermediate {{res.3.n|int}}, the high {{res.4.n|int}} and the full {{res.5.n|int}}. Natural Earth's detailed 1:10 million map, the base of countless world maps, has {{res.0.n|int}}. But look only at islands of 1 km² or more and the count settles: {{res.3.ge1|int}}, {{res.4.ge1|int}} and {{res.5.ge1|int}} in the three finest GSHHG versions. Below a square kilometre, any total is mostly a statement about the ruler you used.</p>
+<div class="figure"><p class="fig-h">The count depends on the map</p><p class="fig-sub">Islands in Natural Earth 10m and in each GSHHG resolution, all sizes and 1 km² or more.</p>
+<div class="scrollrow" id="resRow" style="margin-bottom:10px"><button class="btn" data-k="n" aria-pressed="true">All sizes</button><button class="btn" data-k="ge1" aria-pressed="false">1 km² or more</button></div>
+<div class="chart" id="resChart"></div></div>
+
+<h2><span class="n">03 · Who has them</span>Canada, then everyone else</h2>
+<p>Canada has the most islands on every measure: {{top_countries.all.0.n|int}} of all sizes and {{top_countries.ge1.0.ge1|int}} of 1 km² or more, from Baffin, Victoria and Ellesmere in the Arctic to the lakes and coasts of the south. Counting every rock, Greenland is next with {{top_countries.all.1.n|int}}, then Finland with {{top_countries.all.2.n|int}} (nearly all along its coast and in the Archipelago Sea: the shoreline has few of the islands in Finland's lakes), the United States, Norway and Sweden. Counting islands of 1 km² or more, the order changes: the United States ({{top_countries.ge1.1.ge1|int}}), Indonesia ({{top_countries.ge1.2.ge1|int}}), Russia ({{top_countries.ge1.3.ge1|int}}) and Chile ({{top_countries.ge1.4.ge1|int}}). The Nordic skerries are many but tiny; the Indonesian and Chilean islands are fewer but bigger.</p>
+<div class="figure"><p class="fig-h">Islands by country or territory</p><p class="fig-sub">Top 15. Territories such as Greenland, Åland and the Faroes count on their own, as in Natural Earth. Click a bar to see the country on the map.</p>
+<div class="scrollrow" id="ctyRow" style="margin-bottom:10px"><button class="btn" data-k="ge1" aria-pressed="true">1 km² or more</button><button class="btn" data-k="ge10" aria-pressed="false">10 km² or more</button><button class="btn" data-k="n" aria-pressed="false">All sizes</button></div>
+<div class="chart" id="ctyChart"></div></div>
+<p>Sweden's famous figure of {{meta.swe_official|int}} islands comes from a far more detailed national map than any world shoreline: GSHHG finds {{swe.n|int}} Swedish islands, and just {{swe.ge1|int}} of 1 km² or more. The Stockholm archipelago, the Åland islands and the Archipelago Sea off Turku alone hold {{baltic_n|int}} GSHHG islands, {{baltic_ge1|int}} of them over a square kilometre.</p>
+<div class="cta"><a href="#atlas" data-go="baltic">The Baltic archipelagos on the map</a><a href="#atlas" data-go="arctic">The Canadian Arctic</a><a href="#atlas" data-go="indo">Indonesia and the Philippines</a></div>
+
+<h2><span class="n">04 · The biggest</span>Greenland, New Guinea, Borneo</h2>
+<p>Leaving out the continents (Australia is the smallest of them, at more than three times Greenland's size), the largest island is Greenland at {{largest.0.area|int}} km², then New Guinea ({{largest.1.area|int}} km²), Borneo, Madagascar, Baffin and Sumatra. Some are shared: New Guinea between Indonesia and Papua New Guinea, Borneo between Indonesia, Malaysia and Brunei, and Ireland, Hispaniola, Timor, Tierra del Fuego and Cyprus each between two or more. Altogether islands cover {{counts.isl_area|m1}} million km², {{counts.isl_area_pct|f1}}% of the world's land.</p>
+<div class="figure"><p class="fig-h">The largest islands</p><p class="fig-sub">Area within the GSHHG coastline, including lakes. Colour: size class. Click a bar to find the island.</p><div class="chart" id="bigChart"></div></div>
+
+<h2><span class="n">05 · People</span>One person in ten lives on an island</h2>
+<p>WorldPop's 2025 estimates put {{pop.world|m1}} million people on the grid. {{pop.isl|m1}} million of them, {{pop.pct|f1}}%, live on islands. Three islands account for {{pop.top3_pct_isl|pc}} of them: Java with {{pop.top.0.pop|m1}} million people, one in every {{java_one_in|int}} people on Earth; Honshu with {{pop.top.1.pop|m1}} million; and Great Britain with {{pop.top.2.pop|m1}} million. Luzon, Sumatra, Madagascar, Mindanao, Borneo, Hispaniola, Sri Lanka and Taiwan follow. The ten most populous islands hold {{pop.top10_pct_isl|pc}} of all island people.</p>
+<div class="figure"><p class="fig-h">The most populous islands</p><p class="fig-sub">People in 2025, WorldPop. Colour: size class. Click a bar to find the island.</p><div class="chart" id="popChart"></div></div>
+<p>{{island_nations.n99_100k|int}} countries and territories with 100,000 people or more are entirely or almost entirely on islands (99% or more of their people), together home to {{island_nations.people99|m0}} million. In others, islands are a large minority. In Denmark {{dnk.pct|pc}} of people live on islands, mostly on Zealand around Copenhagen and on Funen. In Hong Kong it is {{hkg.pct|pc}}, in Malaysia {{mys.pct|pc}} (Borneo and Penang), Greece {{grc.pct|pc}}, Canada {{can.pct|pc}} (Montreal, Vancouver Island and Newfoundland) and Italy {{ita.pct|pc}} (Sicily and Sardinia).</p>
+<div class="figure"><p class="fig-h">Where the island people are</p><p class="fig-sub">People living on islands by region, millions, 2025. Hover for the region's largest and most populous island.</p><div class="chart" id="regChart"></div></div>
+
+<h2><span class="n">06 · Crowded and empty</span>Xiamen and Devon Island</h2>
+<p>Among islands of 100 km² or more, the most crowded is Xiamen Island in China, with {{dens.ge100.0.dens|int}} people per km², ahead of Singapore ({{dens.ge100.1.dens|int}}), Montreal (joined to Laval in this shoreline) and Staten Island. Of the islands over 1,000 km², Long Island in New York is the most crowded ({{dens.ge1000.0.dens|int}} per km²), then Java ({{dens.ge1000.1.dens|int}}). At the other end, {{empty_n_ge1000|int}} islands of 1,000 km² or more have nobody on them in WorldPop's grid. The largest is Devon Island in the Canadian Arctic, {{empty.0.area|int}} km² and genuinely uninhabited. The list also shows the limits of a population model: Spitsbergen, home to the town of Longyearbyen, also comes out empty, because the settlement layer behind WorldPop misses it.</p>
+<div class="figure"><p class="fig-h">Most crowded and largest empty islands</p><p class="fig-sub">People per km² on islands of 100 km² or more; and the largest islands with no one in WorldPop's 2025 grid.</p>
+<div class="scrollrow" id="ceRow" style="margin-bottom:10px"><button class="btn" data-k="c" aria-pressed="true">Most crowded</button><button class="btn" data-k="e" aria-pressed="false">Largest empty</button></div>
+<div class="chart" id="ceChart"></div></div>
+
+<h2><span class="n">07 · Islands in lakes on islands</span>Glover Island</h2>
+<p>GSHHG keeps track of what sits inside what: land, lakes on the land, islands in the lakes. {{nest.lakes_on_isl|int}} of its {{counts.lakes|int}} lakes are on islands, the largest a {{nest.biggest_lake.km2|int}} km² lake on Baffin Island (Amadjuak Lake; the bigger Nettilling Lake is missing from the shoreline). {{nest.n|int}} islands sit in a lake on an island. The largest is Glover Island, {{nest.top.0.area|int}} km² of forest in Grand Lake on Newfoundland. Then come Talim Island in Laguna de Bay and Volcano Island in Taal Lake, both on Luzon, and Isla Cabritos in Lake Enriquillo on Hispaniola. Volcano Island has a crater lake with its own islet, Vulcan Point, but the shoreline stops one level short of that.</p>
+<div class="cards" id="cards"></div>
+<p>Samosir, in Lake Toba on Sumatra, is often called the largest island within an island. In GSHHG it is not an island at all: a narrow isthmus, cut only by a canal, joins it to the lake shore. The same kind of judgement decides much bigger questions. Manhattan and Mumbai's Salsette Island are part of the mainland in this shoreline, so their people count as continental; the Island of Montreal and Laval are drawn as one.</p>
+<p class="pull">{{pop.isl|m0}} million people, {{pop.pct|f1}}% of humanity, live on islands. Java alone holds more than all of North America's islands put together.</p>
+
+<h2><span class="n">08 · How I did this</span>Methods and caveats</h2>
+<p><b>Islands.</b> GSHHG 2.3 at full resolution (Wessel and Smith), as packaged in the basemap-data-hires Python package. Its polygons are ranked by level: 1 is land, 2 a lake, 3 an island in a lake. Every level-1 polygon except the five continents (Eurasia, Africa, North America, South America and Australia, each over 5 million km²) is a sea island; every level-3 polygon is an island in a lake or river; Antarctica is kept separately in GSHHG, and its {{counts.ant|int}} islands are counted too. Pieces cut at the date line were joined. Areas are GSHHG's own, within the coastline, lakes included. The smallest island in the data is {{counts.min_m2|int}} m².</p>
+<p><b>Countries and regions.</b> Each island takes the Natural Earth country under it, or the nearest one; for islands over 1,000 km² I measured the share in each country and gave the island to the largest. Regions follow Natural Earth's continents, with Hawaii, Easter Island and New Guinea in Oceania, the French and Dutch Caribbean in the Caribbean, and Asian Russia in Asia. Names come from Natural Earth's physical labels, and I named by hand the larger islands it leaves out, checking each by position and size.</p>
+<p><b>People.</b> WorldPop Global 2 (release 2024B), the constrained 2025 estimate at 30 arc seconds, about 1 km, as re-tiled on GitHub by the world-population-3d project ({{meta.n_cells|int}} populated cells, those with 3 or more people). Each cell goes to the land polygon under its centre; coastal cells whose centre falls in the sea go to an island that touches them or to the nearest land within two cells. Only {{pop.unplaced|m1}} million people could not be placed. A 1 km cell cannot split a city across a narrow channel, so small islands next to big cities are rough.</p>
+<p><b>What this cannot say.</b> Counts below 1 km² depend on the map's resolution. GSHHG is built from older shoreline data: it misses reclaimed land, some small lake and river islands, and Nettilling Lake, and it joins some islands to their neighbours or the mainland (Manhattan, Salsette, Samosir, Montreal with Laval) while it splits others (the Brodeur Peninsula is cut off from Baffin Island). WorldPop is a model: it places people by satellite-detected buildings, so it can miss small remote settlements. Natural Earth's borders are de facto, not a view on any dispute.</p>
+<details><summary>Islands of 1 km² or more by region</summary><div class="tscroll" id="regTable"></div></details>
+<details><summary>Sources and licences</summary>
+<ul>
+<li>GSHHG 2.3, Global Self-consistent, Hierarchical, High-resolution Geography database (Wessel and Smith, 1996), all five resolutions, from the basemap-data and basemap-data-hires 2.0.0 Python packages. LGPL-3.0. The island tiles, outlines and points on this page are derived from it.</li>
+<li>WorldPop Global 2, R2024B, constrained population 2025, 30 arc seconds (WorldPop, University of Southampton). CC BY 4.0. Re-tiled with log-quantised counts by github.com/nn0000asdf/world-population-3d (MIT).</li>
+<li>Natural Earth 10m countries, physical labels, land and minor islands, and populated places (public domain).</li>
+<li>Base map tiles © Esri.</li>
+</ul></details>
+
+<div class="cta"><a class="p" href="https://doi.org/10.5281/zenodo.23848301">Read the paper</a><a href="https://github.com/Tristan-Hotham/world-islands">Data and code</a><a href="https://blog.tristanhotham.com/2026/10/31/world-islands/">Blog post</a><a href="https://blog.tristanhotham.com/">Blog home</a></div>
+
+<footer>
+<p>Dr Tristan Hotham, Independent researcher. ORCID <a href="https://orcid.org/0000-0003-4931-9349">0000-0003-4931-9349</a>.</p>
+<p>Cite as: Hotham, T. (2026) Where the world's islands are: counting, measuring and peopling every island in the GSHHG shoreline. Zenodo. <a href="https://doi.org/10.5281/zenodo.23848301">https://doi.org/10.5281/zenodo.23848301</a></p>
+<p>Data and code: <a href="https://github.com/Tristan-Hotham/world-islands">github.com/Tristan-Hotham/world-islands</a>. Licence: text and data CC BY 4.0, code MIT; island outlines and tiles derived from GSHHG are LGPL-3.0; population figures derive from WorldPop (CC BY 4.0).</p>
+<p>I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.</p>
+</footer>
+</div>
+<div class="tip" id="tip"></div>
+<button class="btn theme" id="theme" aria-label="Toggle dark mode">◐</button>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const R = /*RESULTS*/;
+const SITE = /*SITE*/;
+const TILES = /*TILES*/;
+const fmt = n => n == null || n === "" ? "n/a" : Math.round(n).toLocaleString("en-GB");
+const fA = a => a < 0.01 ? a.toFixed(4) : a < 1 ? a.toFixed(2) : a < 10 ? a.toFixed(1) : fmt(a);
+const fP = p => p >= 1e6 ? (p / 1e6).toFixed(1) + " million" : fmt(p);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const tip = document.getElementById("tip");
+function showTip(h, x, y) { tip.innerHTML = h; tip.style.display = "block"; const w = tip.offsetWidth; x = Math.max(w / 2 + 8, Math.min(innerWidth - w / 2 - 8, x)); tip.style.left = x + scrollX + "px"; tip.style.top = y + scrollY + "px"; }
+function hideTip() { tip.style.display = "none"; }
+document.addEventListener("click", hideTip);
+const NS = "http://www.w3.org/2000/svg";
+const el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const lbl = (svg, x, y, s, cls = "lab", anchor = "start") => { const t = el("text", { x, y, class: cls, "text-anchor": anchor }, svg); t.textContent = s; return t; };
+const redraws = [];
+function resp(box, render) { let last = 0; const go = force => { const w = Math.max(280, Math.round(box.clientWidth)); if (!force && Math.abs(w - last) < 4) return; last = w; box.innerHTML = ""; render(w, w < 560); }; new ResizeObserver(() => go()).observe(box); go(); redraws.push(() => go(true)); }
+const isDark = () => { const r = document.documentElement; return r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const small = () => innerWidth < 900;
+const COL = SITE.class_col, CLAB = SITE.class_labels;
+const CUTS = [0.1, 1, 10, 100, 1000, 1e4, 1e5];
+const clsOf = a => { let k = 0; while (k < CUTS.length && a >= CUTS[k]) k++; return k; };
+const CN = SITE.cname;
+const KIND = ["Sea island", "Island in a lake or river", "Antarctic island"];
+
+/* hero mark: three islands, small to large */
+(function () {
+  const g = document.getElementById("heroMark");
+  el("path", { d: "M2 104 Q20 98 40 104 T78 104 T98 104", fill: "none", stroke: "#34409A", "stroke-width": 3 }, g);
+  el("path", { d: "M2 114 Q20 108 40 114 T78 114 T98 114", fill: "none", stroke: "#34409A", "stroke-width": 3, opacity: .5 }, g);
+  el("path", { d: "M8 98 Q12 90 18 92 Q22 94 24 98 Z", fill: COL[1] }, g);
+  el("path", { d: "M26 98 Q30 78 42 76 Q54 78 56 98 Z", fill: COL[3] }, g);
+  el("path", { d: "M50 98 Q58 40 76 34 Q94 42 98 98 Z", fill: COL[7] }, g);
+})();
+
+/* ---------- base map and layers ---------- */
+const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+const ESRI_ATT = 'Tiles &copy; Esri, HERE, Garmin, USGS, NGA, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, and the GIS user community';
+const LYDEF = { base: "plain", hills: false, hillK: 45, labels: false, labelK: 80, names: true, nameLvl: 1, borders: true, isl: true, islK: 90, outl: true, dots: true };
+const LY = { ...LYDEF };
+try { Object.assign(LY, JSON.parse(localStorage.getItem("islands_layers") || "{}")); } catch (e) {}
+const saveLY = () => { try { localStorage.setItem("islands_layers", JSON.stringify(LY)); } catch (e) {} };
+const map = L.map("map", { minZoom: 1, maxZoom: 16, worldCopyJump: true, zoomSnap: .5, preferCanvas: true }).setView([25, 20], small() ? 1 : 2);
+["hills:250", "isl:330", "outl:380", "borders:390", "labels:450", "dots:500", "names:620"].forEach(s => { const [n, z] = s.split(":"); map.createPane(n); map.getPane(n).style.zIndex = z; });
+["hills", "labels", "names", "borders", "isl"].forEach(n => map.getPane(n).style.pointerEvents = "none");
+let base = null, hills = null, labels = null, outl = null, world = null; const names = L.layerGroup();
+const TSET = {}; for (const z in TILES) TSET[z] = new Set(TILES[z]);
+const IslTiles = L.GridLayer.extend({
+  createTile(c, done) {
+    const t = document.createElement("img"); t.alt = ""; t.setAttribute("role", "presentation");
+    const z = c.z, n = 1 << z, x = ((c.x % n) + n) % n;
+    if (TSET[z] && TSET[z].has(x * n + c.y)) { t.onload = () => done(null, t); t.onerror = () => done(null, t); t.src = `tiles/${z}/${x}/${c.y}.png`; }
+    else setTimeout(() => done(null, t), 0);
+    t.style.imageRendering = "pixelated"; return t;
+  }
+});
+const islTiles = new IslTiles({ pane: "isl", maxNativeZoom: 6, minNativeZoom: 1, maxZoom: 7.5, opacity: .9 });
+function setTiles() {
+  [base, labels, hills].forEach(l => { if (l) map.removeLayer(l); });
+  const t = isDark() ? "Dark" : "Light";
+  const url = LY.base === "relief" ? ESRI + "World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}" : LY.base === "satellite" ? ESRI + "World_Imagery/MapServer/tile/{z}/{y}/{x}" : LY.base === "streets" ? ESRI + "World_Street_Map/MapServer/tile/{z}/{y}/{x}" : LY.base === "ocean" ? ESRI + "Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}" : `${ESRI}Canvas/World_${t}_Gray_Base/MapServer/tile/{z}/{y}/{x}`;
+  base = L.tileLayer(url, { maxZoom: 19, maxNativeZoom: LY.base === "relief" ? 13 : 16, attribution: ESRI_ATT }).addTo(map);
+  hills = L.tileLayer(ESRI + "Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, maxNativeZoom: 16, pane: "hills" });
+  labels = L.tileLayer(`${ESRI}Canvas/World_${t}_Gray_Reference/MapServer/tile/{z}/{y}/{x}`, { maxZoom: 19, maxNativeZoom: 16, pane: "labels" });
+  if (world) world.setStyle({ color: isDark() ? "#5b6170" : "#a89f8e" });
+  applyLayers();
+}
+fetch("data/world.json").then(r => r.json()).then(j => { world = L.geoJSON(j, { pane: "borders", interactive: false, style: () => ({ color: isDark() ? "#5b6170" : "#a89f8e", weight: .7, fill: false, opacity: .9 }) }); applyLayers(); });
+let CITIES = [];
+fetch("data/cities.json").then(r => r.json()).then(j => { CITIES = j; placeNames(); });
+function applyLayers() {
+  if (!base) return;
+  if (LY.hills) { hills.addTo(map); hills.setOpacity(Math.min(1, .12 + LY.hillK / 120)); } else map.removeLayer(hills);
+  if (LY.labels) { labels.addTo(map); labels.setOpacity(LY.labelK / 100); } else map.removeLayer(labels);
+  if (world) { if (LY.borders) world.addTo(map); else map.removeLayer(world); }
+  if (LY.isl) { islTiles.addTo(map); islTiles.setOpacity(LY.islK / 100); } else map.removeLayer(islTiles);
+  if (outl) { if (LY.outl) outl.addTo(map); else map.removeLayer(outl); styleOutl(); }
+  if (LY.names) names.addTo(map); else map.removeLayer(names);
+  placeNames(); if (dl) dl.redraw();
+}
+function placeNames() {
+  names.clearLayers(); if (!LY.names || !CITIES.length) return;
+  const z = map.getZoom(), bb = map.getBounds().pad(.05); const boxes = [];
+  const minPop = [[3, 8e6], [4, 3e6], [5, 1e6], [6, 4e5], [7, 1.5e5], [99, 1e5]].find(([zz]) => z < zz + (LY.nameLvl === 2 ? 1.5 : LY.nameLvl === 0 ? -1 : 0))[1] * (LY.nameLvl === 0 ? 2 : 1);
+  let n = 0;
+  for (const c of CITIES) {
+    if ((c.pop < minPop && !(c.cap && z >= 5)) || !bb.contains([c.lat, c.lon])) continue;
+    const pt = map.latLngToContainerPoint([c.lat, c.lon]), big = c.pop >= 2e6 || c.cap;
+    const bx = [pt.x - 4, pt.y - 8, pt.x + 10 + c.name.length * (big ? 6.9 : 6.3), pt.y + 7];
+    if (boxes.some(o => bx[0] < o[2] && bx[2] > o[0] && bx[1] < o[3] && bx[3] > o[1])) continue;
+    boxes.push(bx); L.marker([c.lat, c.lon], { pane: "names", interactive: false, keyboard: false, icon: L.divIcon({ className: "cityL" + (big ? "" : " s"), html: `<i></i>${esc(c.name)}`, iconSize: null, iconAnchor: [3, 6] }) }).addTo(names);
+    if (++n >= 100) break;
+  }
+}
+(function layerControl() {
+  const Ctl = L.Control.extend({ options: { position: "topright" }, onAdd() {
+    const d = L.DomUtil.create("div"); L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
+    d.innerHTML = `<button class="lyrBtn" aria-expanded="false">Map layers</button>
+<div class="lyrPanel" hidden>
+ <div class="row"><label style="font-weight:600">Base map</label><div class="sub"><select data-k="base" aria-label="Base map"><option value="plain">Plain grey</option><option value="ocean">Ocean</option><option value="streets">Streets</option><option value="relief">Shaded relief</option><option value="satellite">Satellite</option></select></div></div>
+ <div class="row"><label><input type="checkbox" data-k="hills"> Hills and mountains</label><div class="sub"><span>strength</span><input type="range" data-k="hillK" min="10" max="100" step="5" aria-label="Hill shading strength"></div></div>
+ <div class="row"><label><input type="checkbox" data-k="labels"> Map labels</label><div class="sub"><span>strength</span><input type="range" data-k="labelK" min="20" max="100" step="5" aria-label="Map label strength"></div></div>
+ <div class="row"><label><input type="checkbox" data-k="names"> Bold place names</label><div class="sub"><span>how many</span><select data-k="nameLvl" aria-label="How many place names"><option value="0">Biggest only</option><option value="1">Some</option><option value="2">Lots</option></select></div></div>
+ <div class="row"><label><input type="checkbox" data-k="borders"> Borders</label></div>
+ <div class="hd">Islands</div>
+ <div class="row"><label><input type="checkbox" data-k="isl"> All islands by size</label><div class="sub"><span>strength</span><input type="range" data-k="islK" min="20" max="100" step="5" aria-label="Island colour strength"></div></div>
+ <div class="row"><label><input type="checkbox" data-k="outl"> Outlines (100 km² and over)</label></div>
+ <div class="row"><label><input type="checkbox" data-k="dots"> Close-up dots (zoom 7 and in; island tiles give way at 8)</label></div>
+ <button class="reset">Reset layers</button>
+</div>`;
+    return d; } });
+  map.addControl(new Ctl());
+  const box = map.getContainer(), btn = box.querySelector(".lyrBtn"), pan = box.querySelector(".lyrPanel");
+  btn.onclick = () => { const o = pan.hidden; pan.hidden = !o; btn.setAttribute("aria-expanded", o); };
+  const sync = () => pan.querySelectorAll("[data-k]").forEach(i => { const k = i.dataset.k; if (i.type === "checkbox") i.checked = LY[k]; else i.value = LY[k]; });
+  pan.querySelectorAll("[data-k]").forEach(i => i.addEventListener(i.type === "range" ? "input" : "change", () => {
+    const k = i.dataset.k; LY[k] = i.type === "checkbox" ? i.checked : (k === "base" ? i.value : +i.value);
+    if (k === "hillK") LY.hills = true; if (k === "labelK") LY.labels = true; if (k === "nameLvl") LY.names = true; if (k === "islK") LY.isl = true;
+    sync(); saveLY(); if (k === "base") setTiles(); else applyLayers();
+  }));
+  pan.querySelector(".reset").onclick = () => { Object.assign(LY, LYDEF); saveLY(); sync(); setTiles(); };
+  sync();
+})();
+L.control.scale({ imperial: false, position: "bottomright" }).addTo(map);
+
+/* ---------- islands: points (all), outlines (100 km2 and over) ---------- */
+let P = null, n = 0, MX, MY, POPRANK, NB = null;
+const S = { sel: -1, cty: null };
+fetch("data/points.json").then(r => r.json()).then(j => {
+  P = j; n = P.x.length; MX = new Float64Array(n); MY = new Float64Array(n);
+  for (let i = 0; i < n; i++) { const lon = P.x[i] / 1000, lat = Math.max(-85, Math.min(85, P.y[i] / 1000)), s = Math.sin(lat * Math.PI / 180); MX[i] = (lon + 180) / 360; MY[i] = .5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI); }
+  const ord = []; for (let i = 0; i < n; i++) if (P.p[i] > 0) ord.push(i); ord.sort((a, b) => P.p[b] - P.p[a]);
+  POPRANK = new Int32Array(n); ord.forEach((i, k) => POPRANK[i] = k + 1); POPRANK.nPop = ord.length;
+  dl.redraw(); side();
+});
+fetch("data/outlines.geojson").then(r => r.json()).then(j => {
+  outl = L.geoJSON(j, { pane: "outl", style: () => ({}) });
+  outl.on("click", e => { L.DomEvent.stopPropagation(e); pick(e.layer.feature.properties.r, false, e.latlng); });
+  applyLayers();
+});
+function styleOutl() { if (!outl) return; const z = map.getZoom(); outl.setStyle(f => ({ color: isDark() ? "#ECE8E1" : "#1D2A31", weight: z >= 6 ? 1 : .6, opacity: z >= 4 ? .55 : .25, fillColor: COL[clsOf(P ? P.a[f.properties.r] : 1000)], fillOpacity: z >= 7 ? .35 : 0 })); }
+map.on("zoomend", styleOutl);
+const DotLayer = L.Layer.extend({
+  onAdd(m) { this._m = m; this._c = L.DomUtil.create("canvas"); this._c.style.position = "absolute"; this._c.style.pointerEvents = "none"; m.getPane("dots").appendChild(this._c);
+    m.on("moveend zoomend resize viewreset", this.redraw, this); m.on("zoomstart", () => { this._c.style.opacity = 0; }); this.redraw(); },
+  onRemove(m) { L.DomUtil.remove(this._c); m.off("moveend zoomend resize viewreset", this.redraw, this); },
+  redraw() {
+    const m = this._m, c = this._c; if (!m) return; const sz = m.getSize(), dpr = window.devicePixelRatio || 1;
+    L.DomUtil.setPosition(c, m.containerPointToLayerPoint([0, 0]));
+    c.width = sz.x * dpr; c.height = sz.y * dpr; c.style.width = sz.x + "px"; c.style.height = sz.y + "px";
+    const ctx = c.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, sz.x, sz.y); c.style.opacity = 1;
+    if (!P) return; const z = m.getZoom(), scl = 256 * Math.pow(2, z), o = m.getPixelBounds().min, W = sz.x, H = sz.y;
+    VIEW.scl = scl; VIEW.o = o;
+    if (LY.dots && z >= 7) {
+      const mpp = 40075016 / scl;      // metres per pixel at the equator
+      for (let k = 0; k < 8; k++) {
+        ctx.fillStyle = COL[k]; ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+          const a = P.a[i]; if (clsOf(a) !== k || a >= 100) continue;
+          let x = MX[i] * scl - o.x; x -= Math.round(x / scl) * scl * 0; const y = MY[i] * scl - o.y;
+          if (x < -20 || y < -20 || x > W + 20 || y > H + 20) continue;
+          const cl = Math.cos(P.y[i] / 1000 * Math.PI / 180), r = Math.max(2, Math.sqrt(a * 1e6 / Math.PI) / (mpp * cl));
+          ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, 6.2832);
+        }
+        ctx.globalAlpha = .9; ctx.fill(); ctx.globalAlpha = 1; ctx.lineWidth = .6; ctx.strokeStyle = isDark() ? "#15171B" : "#FFFFFF"; ctx.stroke();
+      }
+    }
+    if (S.sel >= 0) { const i = S.sel, x = MX[i] * scl - o.x, y = MY[i] * scl - o.y; ctx.lineWidth = 2.5; ctx.strokeStyle = css("--hot"); ctx.beginPath(); ctx.arc(x, y, 12, 0, 6.2832); ctx.stroke(); }
+  }
+});
+const VIEW = {};
+const dl = new DotLayer().addTo(map);
+
+/* ---------- picking and popups ---------- */
+function nearest(cp, rad) {
+  if (!P || !VIEW.scl) return -1; const { scl, o } = VIEW; let best = -1, bs = 1e9;
+  for (let i = 0; i < n; i++) {
+    const x = MX[i] * scl - o.x - cp.x; if (x > rad || x < -rad) continue; const y = MY[i] * scl - o.y - cp.y; if (y > rad || y < -rad) continue;
+    const d = Math.hypot(x, y); if (d < bs) { bs = d; best = i; }
+  }
+  return best;
+}
+const nm = i => P.n[i] >= 0 ? P.names[P.n[i]] : "Unnamed island";
+function hInfo(i) {
+  const a = P.a[i], k = clsOf(a), p = P.p[i], c = SITE.countries[P.c[i]];
+  return `<b class="nm">${esc(nm(i))}</b><span class="chip" style="background:${COL[k]};color:${k < 3 ? "#1D2A31" : "#fff"}">${esc(CLAB[k])}</span><table>
+<tr><td>Area</td><td>${fA(a)} km²</td></tr>
+<tr><td>Rank by area</td><td>${fmt(i + 1)} of ${fmt(n)}</td></tr>
+<tr><td>People, 2025</td><td>${p ? fP(p) : "none counted"}${p ? `<br><small>rank ${fmt(POPRANK[i])} of ${fmt(POPRANK.nPop)} inhabited; ${fmt(p / a)} per km²</small>` : ""}</td></tr>
+<tr><td>Country</td><td>${esc(CN[c] || c)}</td></tr>
+<tr><td>Kind</td><td>${KIND[P.k[i]]}</td></tr>
+${P.pl[i] >= 0 ? `<tr><td>Largest place (Natural Earth)</td><td>${esc(P.places[P.pl[i]])}</td></tr>` : ""}
+<tr><td>Where</td><td>${(P.y[i] / 1000).toFixed(3)}, ${(P.x[i] / 1000).toFixed(3)}</td></tr></table>`;
+}
+function pick(i, move, ll) {
+  S.sel = i; S.cty = null; const at = [P.y[i] / 1000, P.x[i] / 1000];
+  if (move) { const a = P.a[i]; map.setView(at, a > 1e5 ? 4 : a > 1e4 ? 5 : a > 1000 ? 7 : a > 100 ? 9 : a > 10 ? 10 : a > 1 ? 12 : 13); } else dl.redraw();
+  L.popup({ maxWidth: 300, autoPanPadding: [30, 30] }).setLatLng(ll || at).setContent(hInfo(i)).openOn(map);
+  side(); if (move) toMap();
+}
+map.on("click", e => { if (!P) return; const i = nearest(e.containerPoint, 12); if (i >= 0) pick(i, false); else { S.sel = -1; map.closePopup(); dl.redraw(); side(); } });
+map.on("popupclose", () => { if (S.sel >= 0) { S.sel = -1; dl.redraw(); side(); } });
+
+/* ---------- legend and side panel ---------- */
+document.getElementById("legend").innerHTML = `<span style="color:var(--muted)">Island size</span>` + CLAB.map((l, k) => `<span><i style="background:${COL[k]}"></i>${esc(l)}</span>`).join("");
+function side() {
+  const box = document.getElementById("side");
+  if (S.sel >= 0 && P) { box.innerHTML = `<button class="back">Back to the world</button><h4>Island</h4>` + hInfo(S.sel).replace('class="nm"', 'class="big"'); box.querySelector(".back").onclick = () => { S.sel = -1; map.closePopup(); dl.redraw(); side(); }; return; }
+  if (S.cty) {
+    const c = S.cty, s = SITE.cstats[c];
+    box.innerHTML = `<button class="back">Back to the world</button><h4>Country or territory</h4><span class="big">${esc(CN[c])}</span><table>
+<tr><td>Islands</td><td class="num">${fmt(s[0])}</td></tr><tr><td>1 km² or more</td><td class="num">${fmt(s[1])}</td></tr><tr><td>10 km² or more</td><td class="num">${fmt(s[2])}</td></tr>
+<tr><td>Island land</td><td class="num">${fmt(s[3])} km²</td></tr><tr><td>People, 2025</td><td class="num">${fP(s[4])}</td></tr><tr><td>On islands</td><td class="num">${fP(s[5])}${s[4] ? ` (${(100 * s[5] / s[4]).toFixed(1)}%)` : ""}</td></tr>
+<tr><td>Largest island</td><td class="num">${esc(s[6] || "unnamed")}</td></tr><tr><td>Most people</td><td class="num">${esc(s[7] || "unnamed")}</td></tr></table>
+<p class="sub">Island counts are from the GSHHG shoreline; people from WorldPop. Click an island for details.</p>`;
+    box.querySelector(".back").onclick = () => { S.cty = null; side(); }; return;
+  }
+  const C = R.counts;
+  let h = `<h4>The world</h4><span class="big">${fmt(C.n)} islands</span><p class="sub">${fmt(C.ge1)} of 1 km² or more. ${fP(R.pop.isl)} people live on them (${R.pop.pct.toFixed(1)}%). Search a country or click any island.</p><h4>Islands by size</h4>`;
+  const mx = Math.max(...R.classes.map(d => d.n));
+  h += R.classes.map((d, k) => `<div class="fbar"><span class="l"><span class="sw" style="background:${COL[k]}"></span>${esc(d.label)}</span><span class="v">${fmt(d.n)}</span><span class="t"><i style="width:${(100 * Math.sqrt(d.n / mx)).toFixed(1)}%;background:${COL[k]}"></i></span></div>`).join("");
+  h += `<p class="sub" style="margin-top:6px">Bars on a square-root scale.</p><h4>Most islands, 1 km² or more</h4><table>` + R.top_countries.ge1.slice(0, 6).map(d => `<tr><td>${esc(d.name)}</td><td class="num">${fmt(d.ge1)}</td></tr>`).join("") + `</table>`;
+  box.innerHTML = h;
+}
+function toMap() { if (small()) document.getElementById("map").scrollIntoView({ behavior: "smooth", block: "start" }); }
+function goCountry(c) {
+  const s = SITE.cstats[c]; if (!s) return; S.cty = c; S.sel = -1; map.closePopup();
+  const b = s[8]; map.fitBounds([[b[1], b[0]], [b[3], b[2]]], { maxZoom: 7, padding: [10, 10] }); side(); toMap();
+}
+function goIsland(rank0) { document.getElementById("atlas").scrollIntoView({ behavior: "smooth" }); const go = () => P ? pick(rank0, true) : setTimeout(go, 300); setTimeout(go, 350); }
+
+/* ---------- zoom-to ---------- */
+const FOC = [["World", [[-55, -170], [80, 190]]], ["Canadian Arctic", [[60, -125], [83, -60]]], ["Baltic archipelagos", [[58.9, 17.4], [60.9, 23.6]]], ["Norway", [[58, 4], [71, 31]]], ["Aegean", [[35, 22.5], [41, 28.5]]],
+  ["Indonesia and Philippines", [[-11, 94], [20, 141]]], ["Japan", [[30, 128], [46, 146]]], ["Caribbean", [[10, -86], [27, -59]]], ["Pacific", [[-25, 150], [15, 210]]], ["Chilean fjords", [[-56, -77], [-41, -64]]], ["British Isles", [[49.5, -11], [61, 2]]]];
+(function () {
+  const row = document.getElementById("focusRow");
+  FOC.forEach(([t, b]) => { const e = document.createElement("button"); e.className = "btn"; e.textContent = t; e.onclick = () => { map.fitBounds(b); toMap(); }; row.appendChild(e); });
+})();
+const GO = { baltic: [[58.9, 17.4], [60.9, 23.6]], arctic: [[60, -125], [83, -60]], indo: [[-11, 94], [20, 141]] };
+document.querySelectorAll("[data-go]").forEach(a => a.onclick = e => { e.preventDefault(); document.getElementById("atlas").scrollIntoView({ behavior: "smooth" }); setTimeout(() => map.fitBounds(GO[a.dataset.go]), 300); });
+
+/* ---------- search: countries, islands and places ---------- */
+(function search() {
+  const inp = document.getElementById("q"), sug = document.getElementById("sug"); let opts = [], k = -1;
+  const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const CL = Object.keys(SITE.cstats).map(c => [c, CN[c] || c]), NCL = CL.map(c => norm(c[1]));
+  function build(q) {
+    const nq = norm(q.trim()); if (nq.length < 2) return [];
+    const out = [];
+    CL.forEach((c, i) => { if (NCL[i].includes(nq)) out.push({ t: "c", n: c[1], c: c[0], s: NCL[i].startsWith(nq) ? 6 : 2 }); });
+    if (P) { if (!NB) NB = P.names.map(norm); const seen = new Set();
+      for (let i = 0; i < n && out.length < 80; i++) { if (P.n[i] < 0) continue; const nb = NB[P.n[i]]; if (nb.includes(nq) && !seen.has(P.n[i])) { seen.add(P.n[i]); out.push({ t: "i", n: P.names[P.n[i]], i, s: (nb.startsWith(nq) ? 4 : 1.5) + Math.log10(P.a[i] + 1) / 6 }); } } }
+    CITIES.forEach(c => { const nc = norm(c.name); if (nc.includes(nq)) out.push({ t: "p", n: c.name, c, s: (nc.startsWith(nq) ? 3 : 1) + Math.log10(c.pop + 10) / 10 }); });
+    return out.sort((a, b) => b.s - a.s).slice(0, 12);
+  }
+  const lab = o => o.t === "c" ? `${esc(o.n)} <span>country, ${fmt(SITE.cstats[o.c][0])} islands</span>` : o.t === "i" ? `${esc(o.n)} <span>island, ${fA(P.a[o.i])} km², ${esc(CN[SITE.countries[P.c[o.i]]])}</span>` : `${esc(o.n)} <span>place, ${esc(CN[o.c.iso] || o.c.iso)}</span>`;
+  const show = () => { sug.innerHTML = opts.map((o, i) => `<li role="option" aria-selected="${i === k}" data-i="${i}">${lab(o)}</li>`).join(""); sug.style.display = sug.innerHTML ? "block" : "none"; };
+  const choose = o => { sug.style.display = "none"; inp.value = o.n; inp.blur();
+    if (o.t === "c") goCountry(o.c); else if (o.t === "i") pick(o.i, true); else { map.setView([o.c.lat, o.c.lon], 11); toMap(); } };
+  inp.addEventListener("input", () => { opts = build(inp.value); k = -1; show(); });
+  inp.addEventListener("keydown", e => { if (e.key === "ArrowDown") { k = Math.min(opts.length - 1, k + 1); show(); e.preventDefault(); } else if (e.key === "ArrowUp") { k = Math.max(0, k - 1); show(); e.preventDefault(); } else if (e.key === "Enter" && opts.length) { choose(opts[Math.max(0, k)]); } else if (e.key === "Escape") { sug.style.display = "none"; } });
+  sug.addEventListener("click", e => { const li = e.target.closest("li[data-i]"); if (li) choose(opts[+li.dataset.i]); });
+  document.addEventListener("click", e => { if (!e.target.closest(".searchbox")) sug.style.display = "none"; });
+})();
+map.on("zoomend moveend", placeNames);
+
+/* ---------- charts ---------- */
+function hbars(box, rows, opts) {
+  resp(box, (w, sm) => {
+    const maxLab = Math.max(...rows.map(r => String(r.lab ?? fmt(r.v)).length)), lw = sm ? Math.min(150, w * .42) : Math.min(260, w * .4), rh = 26, h = rows.length * rh + 10, x0 = lw, x1 = w - 10 - maxLab * 7.4, max = opts.max || Math.max(...rows.map(r => r.v)) || 1;
+    const svg = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": opts.aria }, box);
+    rows.forEach((r, i) => {
+      const y = 4 + i * rh, sc = opts.sqrt ? Math.sqrt(r.v / max) : r.v / max, bw = Math.max(r.v > 0 ? 2 : 0, (x1 - x0) * sc), cut = sm ? 19 : 34;
+      const t = lbl(svg, x0 - 8, y + 16, r.n.length > cut ? r.n.slice(0, cut - 1) + "." : r.n, "lab", "end");
+      const bar = el("rect", { x: x0, y: y + 3, width: bw, height: rh - 9, fill: r.c, rx: 1 }, svg);
+      lbl(svg, x0 + bw + 6, y + 16, r.lab ?? fmt(r.v), "lab b");
+      const hit = [t, bar];
+      if (r.tip) hit.forEach(e => { e.addEventListener("mousemove", ev => showTip(r.tip, ev.clientX, ev.clientY)); e.addEventListener("mouseleave", hideTip); });
+      if (r.go) hit.forEach(e => { e.style.cursor = "pointer"; e.addEventListener("click", ev => { ev.stopPropagation(); r.go(); }); });
+    });
+  });
+}
+function toggled(rowId, draw) { const row = document.getElementById(rowId); let k = row.querySelector('[aria-pressed="true"]').dataset.k; const go = () => draw(k); row.querySelectorAll(".btn").forEach(b => b.onclick = () => { k = b.dataset.k; row.querySelectorAll(".btn").forEach(x => x.setAttribute("aria-pressed", x === b)); go(); }); go(); }
+const tC = k => k < 3 ? "#1D2A31" : "#fff";
+(function charts() {
+  toggled("sizeRow", key => { const b = document.getElementById("sizeChart"); b.innerHTML = "";
+    hbars(b, R.classes.map((d, k) => ({ n: d.label, v: d[key], c: COL[k], lab: key === "n" ? fmt(d.n) : d[key].toFixed(1) + "%",
+      tip: `<b>${esc(d.label)}</b><br>${fmt(d.n)} islands (${d.pct_n.toFixed(1)}%)<br>${fmt(d.area)} km² (${d.pct_area.toFixed(1)}% of island land)<br>${fP(d.pop)} people (${d.pct_pop.toFixed(1)}%)<br>${fmt(d.inhabited)} with anyone counted` })), { aria: "Islands by size class" }); });
+  toggled("resChart" && "resRow", key => { const b = document.getElementById("resChart"); b.innerHTML = "";
+    hbars(b, R.res.map(d => ({ n: d.label, v: d[key], c: d.k === "ne" ? css("--gold") : css("--cool"), tip: `<b>${esc(d.label)}</b><br>${fmt(d.n)} islands, ${fmt(d.ge1)} of 1 km² or more, ${fmt(d.ge10)} of 10 km² or more<br>smallest ${d.min_km2 < 0.01 ? Math.round(d.min_km2 * 1e6) + " m²" : d.min_km2.toFixed(2) + " km²"}` })), { aria: "Island counts by map resolution" }); });
+  toggled("ctyRow", key => { const b = document.getElementById("ctyChart"); b.innerHTML = "";
+    hbars(b, R.top_countries[key].slice(0, 15).map(d => ({ n: d.name, v: d[key], c: css("--cool"), go: () => { document.getElementById("atlas").scrollIntoView({ behavior: "smooth" }); setTimeout(() => goCountry(d.c), 350); },
+      tip: `<b>${esc(d.name)}</b><br>${fmt(d.n)} islands; ${fmt(d.ge1)} of 1 km² or more; ${fmt(d.ge10)} of 10 km² or more<br>${fmt(d.area)} km² of island land` })), { aria: "Islands by country" }); });
+  const big = R.largest.slice(0, 20);
+  hbars(document.getElementById("bigChart"), big.map((d, k) => ({ n: d.name, v: d.area, c: COL[clsOf(d.area)], lab: fmt(d.area) + " km²", go: () => goIsland(k),
+    tip: `<b>${esc(d.name)}</b><br>${esc(d.cname)}${d.shares && d.shares.length > 1 ? " (shared: " + d.shares.map(s => (CN[s[0]] || s[0]) + " " + Math.round(s[1]) + "%").join(", ") + ")" : ""}<br>${fP(d.pop)} people` })), { aria: "Largest islands" });
+  const top = R.pop.top.slice(0, 20);
+  hbars(document.getElementById("popChart"), top.map(d => ({ n: d.name, v: d.pop, c: COL[clsOf(d.area)], lab: (d.pop / 1e6).toFixed(1) + " m", go: () => goIsland(d.rank_area - 1),
+    tip: `<b>${esc(d.name)}</b>, ${esc(d.cname)}<br>${fP(d.pop)} people on ${fmt(d.area)} km²<br>${fmt(d.dens)} per km²` })), { aria: "Most populous islands" });
+  hbars(document.getElementById("regChart"), R.regions.filter(d => d.pop > 1).slice().sort((a, b) => b.pop - a.pop).map(d => ({ n: d.name, v: d.pop / 1e6, c: css("--cool"), lab: (d.pop / 1e6).toFixed(1) + " m",
+    tip: `<b>${esc(d.name)}</b><br>${fmt(d.n)} islands, ${fmt(d.ge1)} of 1 km² or more<br>largest: ${esc(d.largest.name)}<br>most people: ${esc(d.most_pop.name)}` })), { aria: "People on islands by region" });
+  toggled("ceRow", key => { const b = document.getElementById("ceChart"); b.innerHTML = "";
+    if (key === "c") hbars(b, R.dens.ge100.slice(0, 10).map(d => ({ n: `${d.name || "Unnamed"}, ${d.cname}`, v: d.dens, c: css("--hot"), lab: fmt(d.dens) + " per km²", tip: `<b>${esc(d.name)}</b><br>${fP(d.pop)} people on ${fmt(d.area)} km²` })), { aria: "Most crowded islands" });
+    else hbars(b, R.empty.slice(0, 10).map(d => ({ n: `${d.name || "Unnamed"}, ${d.cname}`, v: d.area, c: "#8C8574", lab: fmt(d.area) + " km²" })), { aria: "Largest empty islands" }); });
+  const box = document.getElementById("cards");
+  R.nest.top.slice(0, 6).forEach(d => {
+    const b = document.createElement("button"); b.className = "card"; b.style.setProperty("--c", COL[clsOf(d.area)]);
+    b.innerHTML = `<div class="fam">Island in a lake on ${esc(d.on_name)}</div><b>${esc(d.name || "Unnamed island")}</b><span>${fA(d.area)} km² in a ${fmt(d.lake_km2)} km² lake · ${d.pop ? fP(d.pop) + " people" : "no one counted"}</span>`;
+    b.onclick = () => { document.getElementById("atlas").scrollIntoView({ behavior: "smooth" }); setTimeout(() => { map.setView([d.lat, d.lon], 10); toMap(); }, 350); };
+    box.appendChild(b);
+  });
+  document.getElementById("regTable").innerHTML = `<table class="ftable"><tr><th>Region</th><th class="num">Islands</th><th class="num">1 km²+</th><th class="num">Island land, km²</th><th class="num">People</th></tr>` +
+    R.regions.map(d => `<tr><td>${esc(d.name)}</td><td class="num">${fmt(d.n)}</td><td class="num">${fmt(d.ge1)}</td><td class="num">${fmt(d.area)}</td><td class="num">${fP(d.pop)}</td></tr>`).join("") + `</table>`;
+})();
+
+/* ---------- start ---------- */
+document.getElementById("theme").onclick = () => { const r = document.documentElement; r.dataset.theme = isDark() ? "light" : "dark"; setTiles(); redraws.forEach(f => f()); dl.redraw(); };
+setTiles(); side();
+</script>
+/*FULLSCREEN*/
+</body>
+</html>
